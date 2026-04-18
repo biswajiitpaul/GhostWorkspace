@@ -1,0 +1,16 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+service-key.json
+settings.local.json
+
+# VS Code local files
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

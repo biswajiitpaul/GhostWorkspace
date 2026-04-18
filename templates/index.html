@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ghost Workspace</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-ambient">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+  </div>
+  <div class="login-noise"></div>
+  <div class="login-card">
+    <div class="login-logo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <path d="M18 2L32 10V26L18 34L4 26V10L18 2Z" stroke="var(--accent)" stroke-width="1.5" fill="none"/>
+        <path d="M18 9L27 14V24L18 29L9 24V14L18 9Z" fill="var(--accent)" opacity="0.15"/>
+        <circle cx="18" cy="18" r="4" fill="var(--accent)"/>
+      </svg>
+    </div>
+    <div class="login-headline">
+      <h1>Ghost Workspace</h1>
+      <p>Secure access required</p>
+    </div>
+    <div class="login-field-wrap">
+      <div class="login-field">
+        <i data-lucide="key-round" class="login-field-icon"></i>
+        <input
+          type="password"
+          id="login-pass"
+          class="login-input"
+          placeholder="Enter access key"
+          onkeydown="if(event.key==='Enter') performLogin()"
+          autocomplete="current-password"
+        />
+      </div>
+    </div>
+    <button class="login-btn" onclick="performLogin()">
+      <span>Unlock Workspace</span>
+      <i data-lucide="arrow-right"></i>
+    </button>
+    <div class="login-footer">End-to-end encrypted · Supabase Cloud</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
+        <path d="M18 2L32 10V26L18 34L4 26V10L18 2Z" stroke="var(--accent)" stroke-width="1.5" fill="none"/>
+        <circle cx="18" cy="18" r="4" fill="var(--accent)"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">Ghost</span>
+      <span class="brand-tag">Workspace</span>
+    </div>
+    <button class="sidebar-close-btn" onclick="toggleSidebar()">
+      <i data-lucide="panel-left-close"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-group-label">Navigation</div>
+    <button class="nav-item active" onclick="setActiveNav(this); showView('folders')">
+      <i data-lucide="layout-grid"></i>
+      <span>All Folders</span>
+      <span class="nav-badge" id="nav-folder-count"></span>
+    </button>
+    <button class="nav-item" onclick="setActiveNav(this); showView('recent')">
+      <i data-lucide="clock-3"></i>
+      <span>Recent</span>
+    </button>
+    <button class="nav-item nav-item-disabled" title="Coming soon">
+      <i data-lucide="star"></i>
+      <span>Starred</span>
+      <span class="nav-soon">Soon</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-divider"></div>
+
+  <div class="nav-group-label">Cloud Storage</div>
+  <div class="storage-widget">
+    <div class="storage-ring-wrap">
+      <svg class="storage-ring-svg" viewBox="0 0 44 44">
+        <circle cx="22" cy="22" r="18" stroke="var(--border)" stroke-width="3" fill="none"/>
+        <circle cx="22" cy="22" r="18"
+          stroke="var(--accent)" stroke-width="3" fill="none"
+          stroke-dasharray="113" stroke-dashoffset="113"
+          id="storage-ring-circle"
+          stroke-linecap="round"
+          transform="rotate(-90 22 22)"/>
+      </svg>
+      <span id="storage-pct" class="storage-pct-label">0%</span>
+    </div>
+    <div class="storage-details">
+      <div class="storage-used" id="storage-used-label">0 B used</div>
+      <div class="storage-limit">Max 16 MB / file</div>
+      <div class="storage-count" id="storage-file-count">0 files</div>
+    </div>
+  </div>
+
+  <button class="btn-new-folder" onclick="openCreateFolderModal()">
+    <i data-lucide="folder-plus"></i>
+    <span>New Folder</span>
+  </button>
+
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="performLogout()" title="Logout">
+      <i data-lucide="log-out"></i>
+      <span>Logout</span>
+    </button>
+  </div>
+</aside>
+
+<!-- Sidebar mobile backdrop -->
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+<!-- ═══════════════════════════════════════
+     MAIN AREA
+═══════════════════════════════════════ -->
+<div class="main-wrapper" id="main-wrapper">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+      <i data-lucide="menu"></i>
+    </button>
+
+    <nav class="breadcrumb" id="breadcrumb">
+      <span class="crumb active" onclick="goHome()">Home</span>
+    </nav>
+
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <i data-lucide="search" class="search-icon"></i>
+        <input
+          type="text"
+          class="search-input"
+          id="search-input"
+          placeholder="Search files &amp; folders…"
+          oninput="handleSearch(this.value)"
+        />
+        <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <button class="btn-upload" id="upload-btn" onclick="triggerUpload()" style="display:none" title="Upload file">
+        <i data-lucide="upload-cloud"></i>
+        <span>Upload</span>
+      </button>
+      <button class="btn-icon-round" onclick="toggleTheme()" title="Toggle theme">
+        <i data-lucide="moon" id="theme-icon"></i>
+      </button>
+      <div class="avatar-btn" title="Ghost User">G</div>
+    </div>
+  </header>
+
+  <!-- VIEWS -->
+  <main class="content" id="content">
+
+    <!-- FOLDERS VIEW -->
+    <section id="view-folders" class="view active">
+      <div class="view-header">
+        <div class="view-header-left">
+          <h1 class="view-title">My Workspace</h1>
+          <p class="view-subtitle" id="folder-subtitle">Loading…</p>
+        </div>
+        <div class="view-actions">
+          <button class="btn-ghost" onclick="loadFolders()">
+            <i data-lucide="refresh-cw"></i>
+            <span>Refresh</span>
+          </button>
+          <button class="btn-primary" onclick="openCreateFolderModal()">
+            <i data-lucide="folder-plus"></i>
+            <span>New Folder</span>
+          </button>
+        </div>
+      </div>
+      <div class="folder-grid" id="folder-grid"></div>
+      <div class="empty-state" id="folders-empty" style="display:none">
+        <div class="empty-icon"><i data-lucide="ghost"></i></div>
+        <h3>No folders yet</h3>
+        <p>Create your first folder to start organising your files in the cloud.</p>
+        <button class="btn-primary" onclick="openCreateFolderModal()">
+          <i data-lucide="folder-plus"></i> Create Folder
+        </button>
+      </div>
+    </section>
+
+    <!-- FILES VIEW -->
+    <section id="view-files" class="view">
+      <div class="view-header">
+        <div class="view-header-left">
+          <h1 class="view-title" id="files-view-title">Folder</h1>
+          <p class="view-subtitle" id="files-view-subtitle"></p>
+        </div>
+        <div class="view-actions">
+          <button class="btn-danger-soft" onclick="confirmDeleteFolder()">
+            <i data-lucide="trash-2"></i>
+            <span>Delete Folder</span>
+          </button>
+          <button class="btn-primary" onclick="triggerUpload()">
+            <i data-lucide="upload-cloud"></i>
+            <span>Upload File</span>
+          </button>
+        </div>
+      </div>
+      <div class="file-list" id="file-list"></div>
+      <div class="empty-state" id="files-empty" style="display:none">
+        <div class="empty-icon"><i data-lucide="file-x"></i></div>
+        <h3>Folder is empty</h3>
+        <p>Upload a file to get started.</p>
+        <button class="btn-primary" onclick="triggerUpload()">
+          <i data-lucide="upload-cloud"></i> Upload File
+        </button>
+      </div>
+    </section>
+
+    <!-- RECENT VIEW -->
+    <section id="view-recent" class="view">
+      <div class="view-header">
+        <div class="view-header-left">
+          <h1 class="view-title">Recent Files</h1>
+          <p class="view-subtitle">Files modified recently across all folders</p>
+        </div>
+      </div>
+      <div class="file-list" id="recent-list"></div>
+      <div class="empty-state" id="recent-empty" style="display:none">
+        <div class="empty-icon"><i data-lucide="clock-3"></i></div>
+        <h3>Nothing recent</h3>
+        <p>Upload some files to see them here.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Hidden file input -->
+<input type="file" id="file-input" multiple style="display:none" onchange="handleFileUpload(this)" />
+
+<!-- Drop overlay -->
+<div class="drop-overlay" id="drop-overlay">
+  <div class="drop-box">
+    <i data-lucide="upload-cloud"></i>
+    <p>Drop files here to upload</p>
+    <span id="drop-folder-name"></span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MODAL — Create Folder
+═══════════════════════════════════════ -->
+<div class="modal-backdrop" id="modal-create-folder" onclick="closeModalOnBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon"><i data-lucide="folder-plus"></i></div>
+        <h3>New Folder</h3>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-create-folder')">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <label class="field-label">Folder name</label>
+      <input
+        type="text"
+        class="field-input"
+        id="folder-name-input"
+        placeholder="e.g. Projects, Archive, Photos…"
+        onkeydown="if(event.key==='Enter') submitCreateFolder()"
+      />
+      <p class="field-hint">Letters, numbers, dashes and underscores only.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-create-folder')">Cancel</button>
+      <button class="btn-primary" onclick="submitCreateFolder()">
+        <i data-lucide="folder-plus"></i> Create
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MODAL — Preview
+═══════════════════════════════════════ -->
+<div class="modal-backdrop modal-preview-backdrop" id="modal-preview" onclick="closeModalOnBackdrop(event)">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <div class="modal-icon"><i data-lucide="eye"></i></div>
+        <h3 id="preview-title">Preview</h3>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-ghost btn-sm" id="preview-download-btn">
+          <i data-lucide="download"></i> Download
+        </button>
+        <button class="modal-close" onclick="closeModal('modal-preview')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+    </div>
+    <div class="modal-body preview-body" id="preview-body"></div>
+  </div>
+</div>
+
+<!-- Toast stack -->
+<div class="toast-stack" id="toast-stack"></div>
+
+<!-- Upload progress panel -->
+<div class="upload-progress-panel" id="upload-panel" style="display:none">
+  <div class="upload-panel-header">
+    <div class="upload-panel-title">
+      <i data-lucide="upload-cloud"></i>
+      <span>Uploading to Cloud</span>
+    </div>
+    <button class="upload-panel-close" onclick="document.getElementById('upload-panel').style.display='none'">
+      <i data-lucide="x"></i>
+    </button>
+  </div>
+  <div id="upload-progress-list"></div>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
